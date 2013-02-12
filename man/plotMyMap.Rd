@@ -51,7 +51,7 @@ plotMyMap(location, xl = c(-180, 180), yl = c(-50, 50), googlemaps = F)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-plotMyMap('canberra', googlemaps = T)
+plotMyMap('canberra', googlemaps = TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

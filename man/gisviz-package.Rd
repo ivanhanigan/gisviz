@@ -14,7 +14,7 @@ Package: \tab gisviz\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2012-12-18\cr
-License: \tab GPL2\cr
+License: \tab GPL (>= 2)\cr
 }
 }
 \author{
