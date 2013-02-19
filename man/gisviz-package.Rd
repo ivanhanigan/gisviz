@@ -1,3 +1,4 @@
+
 \name{gisviz-package}
 \alias{gisviz-package}
 \alias{gisviz}
