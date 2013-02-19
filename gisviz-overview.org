@@ -171,3 +171,176 @@ gGeoCode2(address)
 
 #+end_src
 
+** get.levels
+*** test-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:get.levels
+
+#+end_src
+*** R-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle R/get.levels.r :exports none :eval no
+################################################################
+# name:get.levels
+
+################################################################
+# name:cells
+
+################################################################################
+# Function to return bin sizes for the map key            
+################################################################################
+get.levels = function(stat,cellsmap, probs=seq(0,1,.2)){
+  cells.map=cellsmap
+  bins = quantile(cells.map@data[,stat], probs, na.rm=T)  
+  binlevels = cut(cells.map@data[,stat], bins, include.lowest=TRUE)
+  groups = strsplit(levels(binlevels), ",")
+# Get the beginning value for each group
+  begins = sapply(groups, '[[', 1)
+  begins = substr(begins, 2, nchar(begins))
+# Get the beginning value for each group
+  ends = sapply(groups, '[[', 2)
+  ends = substr(ends, 1, nchar(ends)-1)
+# Put begins and ends together into labels
+  level.labels = paste(begins, ends, sep = " - ")
+  qlevels = paste(as.character(probs[2:length(probs)]*100),"%:",sep="") 
+  level.labels = paste(qlevels, level.labels)  
+return(level.labels) 
+}  
+#get.levels(cellsmap=d,stat='DAILY_MAX_')
+
+#+end_src
+*** man-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:get.levels
+
+#+end_src
+
+** plotMap
+*** test-plotMap
+#+name:plotMap
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:plotMap
+
+#+end_src
+*** R-plotMap
+#+name:plotMap
+#+begin_src R :session *R* :tangle R/plotMap.r :exports none :eval no
+
+################################################################
+# name:plotMap
+################################################################################
+# Write a mapping function, form of which was taken from here:
+# http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r             
+################################################################################
+
+if (!require(maptools)) install.packages('maptools', repos='http://cran.csiro.au'); require(maptools)
+if (!require(RColorBrewer)) install.packages('RColorBrewer', repos='http://cran.csiro.au'); require(RColorBrewer)
+# library(maptools)
+# library(RColorBrewer)
+
+
+
+plotMap = function(stat=NA,plotdir = getwd(),probs=seq(0,1,.2), outfile = NA,  maptitle = 'map',  cellsmap=NA,region.map=NA){
+  level.labels = get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
+# create a new variable in cells.map to bin the data into categories 
+  cells.map=cellsmap
+  bins = quantile(cells.map@data[,stat], probs, na.rm=T)
+  cells.map@data$bins = cut(cells.map@data[,stat], bins, include.lowest=TRUE)
+# Replace the charachter "levels" attribute with character colors
+  col.vec = brewer.pal(length(level.labels),"YlOrRd")
+  levels(cells.map@data$bins) <- col.vec
+# Open a windows graphics device so that we can see what's happening 
+# windows(11.7,8.3)
+# Split the figure to leave room at the right for a legend, and room
+# at the top margin for a title   
+  par(fig = c(0,0.8,0,1), mar=c(2,2,2,0))
+# plot the map object with no border around the rectangels, and with colors
+# dictated by new variable we created, which holds the colours as its levels
+# paramater.    
+  plot(cells.map, 
+    border = FALSE, 
+    axes = FALSE, 
+    las = 1,
+    col = as.character(cells.map@data$bins))
+axis(2)
+axis(1)
+box()   
+  plot(region.map, add=TRUE, lwd=1)
+  mtext(maptitle, side = 3, cex = 2, line = -0.5)
+  par(fig = c(0.8,1,0,1), mar=c(0,0,0,0), new = FALSE)  
+  legend("left", level.labels, fill=col.vec, bty="n", xpd=TRUE, 
+        title="Legend")
+
+if(!is.na(outfile)){
+# # paste windows device to jpeg device
+  dev.copy(jpeg, file = paste(plotdir, '/',outfile,'.jpg', sep = ""), width = 11.75, 
+    height = 8.3, units = "in", pointsize = 12, quality = 75, bg = "white", 
+    res = 150, restoreConsole = TRUE) 
+  graphics.off()
+}
+  }
+
+  
+# get.levels(cellsmap=d,stat='DAILY_MAX_',probs=seq(0,1,.1))
+# plotMap(cellsmap=d,stat='DAILY_MAX_',region.map=grd,probs=seq(0,1,.1))
+
+#+end_src
+*** man-plotMap
+#+name:plotMap
+#+begin_src R :session *R* :tangle man/plotMap.Rd :exports none :eval no
+\name{plotMap}
+\alias{plotMap}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+Plot a Choropleth Map
+}
+\description{
+Plot a Choropleth Map
+}
+\usage{
+plotMap(stat = NA, plotdir = getwd(), probs = seq(0, 1, 0.2), outfile = NA, maptitle = "map", cellsmap = NA, region.map = NA)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{stat}{
+the column with the statistic to be plotted
+}
+  \item{plotdir}{
+write out a graph
+}
+  \item{probs}{
+quantiles at which to break, default is quintiles, limit is 9
+}
+  \item{outfile}{
+output map file
+}
+  \item{maptitle}{
+
+}
+  \item{cellsmap}{
+if using a raster, can be same as region.map
+}
+  \item{region.map}{
+if using a polygon
+}
+}
+\value{
+a map
+}
+\references{
+http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
+
+Eduardo Leoni
+http://stackoverflow.com/a/1261288
+}
+\author{
+ivanhanigan
+}
+
+
+#+end_src
