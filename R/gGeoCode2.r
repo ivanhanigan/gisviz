@@ -1,4 +1,7 @@
 
+################################################################
+# name:gGeoCode2
+
 
 gGeoCode2 <- function(str, first=T){
   if(!require(XML)) install.packages('XML'); require(XML)
@@ -35,6 +38,7 @@ gGeoCode2 <- function(str, first=T){
   return(out)
   
 }
+
 
 
 # address <- "1 Lineaus way acton canberra"
