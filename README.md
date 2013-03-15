@@ -1,12 +1,8 @@
 gisvizrtools
 ============
 
-GISViz R tools.  See http://www.ada.edu.au/social-science/gisviz for GISViz tool
+GISViz is a collection of tools for Medical Geography and GIS visualisations.  
 
-```{r}
-if(!require(devtools)) install.packages("devtools"); require(devtools)
-install_github("gisvizrtools", "ivanhanigan")
-require(gisvizrtools)
-```
+See  http://ivanhanigan.github.com/gisviz/ for binaries.
 
-Note: Windows users have to first install [Rtools](http://cran.r-project.org/bin/windows/Rtools/).
+See http://www.ada.edu.au/social-science/gisviz for the original GISViz tool.
