@@ -11,7 +11,7 @@ gGeoCode2 <- function(str, first=T){
     sapply(getNodeSet(doc, path), function(el) xmlValue(el))
   }
   
-  if(length(str) == 1)
+  if(!is.data.frame(str) & length(str) == 1)
   {
     str <- gsub(' ','%20',str)
     u <- sprintf('https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=%s',str)
@@ -33,8 +33,14 @@ gGeoCode2 <- function(str, first=T){
     }
     out<-as.data.frame(t(out))
   } else {
-    pointTable<-as.data.frame(matrix(nrow=0, ncol=3))
     
+    if(is.data.frame(str) & ncol(str) == 1){
+      str <- as.character(str[,1])
+    } else {
+      stop("only character vectors or singlecolumn dataframes allowed")
+    }
+    
+    pointTable<-as.data.frame(matrix(nrow=0, ncol=3))
     for(index in 1: length(str))
     {
       #index <- 1
@@ -76,5 +82,5 @@ gGeoCode2 <- function(str, first=T){
 # address <- "1 Lineaus way acton canberra"
 #address2 <- c("1 Lineaus way acton canberra", "15 follett street scullin")
 #xy <- gGeoCode2(address2)
-#xy
+# xy
 #str(xy)
