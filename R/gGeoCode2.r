@@ -75,6 +75,6 @@ gGeoCode2 <- function(str, first=T){
 
 # address <- "1 Lineaus way acton canberra"
 #address2 <- c("1 Lineaus way acton canberra", "15 follett street scullin")
-xy <- gGeoCode2(address2)
-xy
+#xy <- gGeoCode2(address2)
+#xy
 #str(xy)
