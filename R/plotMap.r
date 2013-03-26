@@ -13,7 +13,8 @@ if (!require(RColorBrewer)) install.packages('RColorBrewer', repos='http://cran.
 
 
 
-plotMap = function(stat=NA,plotdir = getwd(),probs=seq(0,1,.2), outfile = NA,  maptitle = 'map',  cellsmap=NA,region.map=NA){
+plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,  cellsmap=region.map, plotdir = getwd(), probs=seq(0,1,.2), outfile = NA)
+  {
   level.labels = get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
 # create a new variable in cells.map to bin the data into categories 
   cells.map=cellsmap
