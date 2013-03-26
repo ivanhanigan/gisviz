@@ -22,6 +22,12 @@ the column with the statistic to be plotted
   \item{region.map}{
 if using a polygon
 }
+ \item{brew.pal}{
+defaults to RdYlBu.  use display.brewer.all() to see options
+}
+ \item{invert.brew.pal}{
+ inverted colour ramp 
+}
   \item{cellsmap}{
 if using a raster etc can be used to show pattern inside polygons, defaults to region.map and therefore overlays.
 }
