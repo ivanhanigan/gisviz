@@ -23,7 +23,7 @@ the column with the statistic to be plotted
 if using a polygon
 }
   \item{cellsmap}{
-if using a raster, can be same as region.map
+if using a raster etc can be used to show pattern inside polygons, defaults to region.map and therefore overlays.
 }
   \item{plotdir}{
 write out a graph
