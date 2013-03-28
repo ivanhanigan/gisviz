@@ -344,3 +344,88 @@ ivanhanigan
 
 
 #+end_src
+** postgis_concordance
+*** COMMENT test-postgis_concordance
+#+name:postgis_concordance
+#+begin_src R :session *R* :tangle tests/test-postgis_concordance.r :exports none :eval yes
+  require(swishdbtools)
+  ch <- connect2postgres2("django")
+  sql <- postgis_concordance(conn = ch, source_table = "abs_sla.nswsla01",
+                      target_table = "abs_sla.nswsla98",
+                             into = "public.test",
+                      tolerance = 0.01,
+                      subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'",
+                      eval = F)
+  cat(sql)
+  
+#+end_src
+*** COMMENT postgis_concordance-code
+#+name:postgis_concordance
+#+begin_src R :session *R* :tangle R/postgis_concordance.r :exports none :eval yes
+  ################################################################
+  # name:postgis_concordance
+  postgis_concordance <- function(conn, source_table, target_table,
+                                  into = paste(source_table, "_concordance", sep = ""),
+                                 tolerance = 0.01,
+                                 subset_target_table = NA,
+                                 eval = F)
+  {
+  sql <- paste("
+  select source_sla_code, source_zones, target_sla_code, prop_olap_src_of_tgt,
+    prop_olap_src_segment_of_src_orig, geom
+  frominto
+  (
+  select    src.sla_code as source_sla_code,
+            tgt.sla_code as target_sla_code, source_zones,
+            st_intersection(src.geom, tgt.geom) as geom,
+            st_area(src.geom) as src_area,
+            st_area(tgt.geom) as tgt_area,
+            st_area(st_intersection(src.geom, tgt.geom )) as area_overlap,
+            st_area(st_intersection(src.geom, tgt.geom
+                                    ))/st_area(tgt.geom) as
+            prop_olap_src_of_tgt,
+            st_area(st_intersection(src.geom, tgt.geom
+                                    ))/st_area(src.geom) as
+            prop_olap_src_segment_of_src_orig
+  from
+  (
+  select sla_code, geom, cast('",source_table,"' as text) as source_zones
+  from ",source_table,"
+  ) src,
+  (
+  select sla_code, geom
+  from ",target_table,"
+  ) tgt
+  where st_intersects(src.geom, tgt.geom)
+  ) concorded
+  where prop_olap_src_of_tgt > ",tolerance,";
+  grant select on ",into," to public_group;
+  ", sep = "")
+
+  # if table exists add inserts, else
+  sql <-  gsub("frominto", paste("into ", into, "\nfrom", sep = ""), sql)
+  sql <- c(sql,paste("\n
+  alter table ",into," add column gid serial primary key;
+  ALTER TABLE ",into," ALTER COLUMN geom SET NOT NULL;
+  CREATE INDEX ",strsplit(into, "\\.")[[1]][2],"_gist on ",into," using GIST(geom);
+  ALTER TABLE ",into," CLUSTER ON ",strsplit(into, "\\.")[[1]][2],"_gist;
+  ", sep = "")
+  )
+  
+  if(!is.na(subset_target_table))
+    {
+      sql <- gsub(") tgt", paste("where ", subset_target_table, "\n) tgt", sep = ""), sql)
+    }
+  if(eval)
+    {
+      dbSendQuery(conn, sql)
+    } else {
+      return(sql)
+    }
+  
+  }
+  
+#+end_src
+
+#+RESULTS: postgis_concordance
+
