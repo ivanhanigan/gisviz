@@ -230,119 +230,141 @@ return(level.labels)
 *** R-plotMap
 #+name:plotMap
 #+begin_src R :session *R* :tangle R/plotMap.r :exports none :eval no
-
-################################################################
-# name:plotMap
-################################################################################
-# Write a mapping function, form of which was taken from here:
-# http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r             
-################################################################################
-
-if (!require(maptools)) install.packages('maptools', repos='http://cran.csiro.au'); require(maptools)
-if (!require(RColorBrewer)) install.packages('RColorBrewer', repos='http://cran.csiro.au'); require(RColorBrewer)
-# library(maptools)
-# library(RColorBrewer)
-
-
-
-plotMap = function(stat=NA,plotdir = getwd(),probs=seq(0,1,.2), outfile = NA,  maptitle = 'map',  cellsmap=NA,region.map=NA){
-  level.labels = get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
-# create a new variable in cells.map to bin the data into categories 
-  cells.map=cellsmap
-  bins = quantile(cells.map@data[,stat], probs, na.rm=T)
-  cells.map@data$bins = cut(cells.map@data[,stat], bins, include.lowest=TRUE)
-# Replace the charachter "levels" attribute with character colors
-  col.vec = brewer.pal(length(level.labels),"YlOrRd")
-  levels(cells.map@data$bins) <- col.vec
-# Open a windows graphics device so that we can see what's happening 
-# windows(11.7,8.3)
-# Split the figure to leave room at the right for a legend, and room
-# at the top margin for a title   
-  par(fig = c(0,0.8,0,1), mar=c(2,2,2,0))
-# plot the map object with no border around the rectangels, and with colors
-# dictated by new variable we created, which holds the colours as its levels
-# paramater.    
-  plot(cells.map, 
-    border = FALSE, 
-    axes = FALSE, 
-    las = 1,
-    col = as.character(cells.map@data$bins))
-axis(2)
-axis(1)
-box()   
-  plot(region.map, add=TRUE, lwd=1)
-  mtext(maptitle, side = 3, cex = 2, line = -0.5)
-  par(fig = c(0.8,1,0,1), mar=c(0,0,0,0), new = FALSE)  
-  legend("left", level.labels, fill=col.vec, bty="n", xpd=TRUE, 
-        title="Legend")
-
-if(!is.na(outfile)){
-# # paste windows device to jpeg device
-  dev.copy(jpeg, file = paste(plotdir, '/',outfile,'.jpg', sep = ""), width = 11.75, 
-    height = 8.3, units = "in", pointsize = 12, quality = 75, bg = "white", 
-    res = 150, restoreConsole = TRUE) 
-  graphics.off()
-}
-  }
-
   
-# get.levels(cellsmap=d,stat='DAILY_MAX_',probs=seq(0,1,.1))
-# plotMap(cellsmap=d,stat='DAILY_MAX_',region.map=grd,probs=seq(0,1,.1))
-
+  ################################################################
+  # name:plotMap
+  ################################################################################
+  # A general mapping function, form of which was taken from here:
+  # http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
+  ################################################################################
+  
+  plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
+                      brew.pal = "RdYlBu",
+                      invert.brew.pal = TRUE,
+                      cellsmap=region.map,
+                      plotdir = getwd(),
+                      probs=seq(0,1,.2),
+                      outfile = NA)
+  {
+    level.labels <- get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
+    # create a new variable in cells.map to bin the data into categories
+    cells.map <- cellsmap
+    bins <- quantile(cells.map@data[,stat], probs, na.rm=T)
+    cells.map@data$bins <- cut(cells.map@data[,stat],
+                               bins, include.lowest=TRUE
+                               )
+    # Replace the character "levels" attribute with character colors
+    col.vec <- brewer.pal(length(level.labels),brew.pal)
+    if(invert.brew.pal == TRUE) col.vec <- col.vec[length(col.vec):1]
+    levels(cells.map@data$bins) <- col.vec
+    # Open a windows graphics device so that we can see what's happening
+    # windows(11.7,8.3)
+    # Split the figure to leave room at the right for a legend, and room
+    # at the top margin for a title
+    par(fig = c(0,0.7,0,1), mar=c(2,2,2,0))
+    # plot the map object with no border around the rectangels, and with colors
+    # dictated by new variable we created, which holds the colours as its levels
+    # paramater.
+    plot(cells.map,
+      border = FALSE,
+      axes = FALSE,
+      las = 1,
+      col = as.character(cells.map@data$bins))
+    axis(2)
+    axis(1)
+    box()
+    plot(region.map, add=TRUE, lwd=1)
+    mtext(maptitle, side = 3, cex = 2, line = 0)
+    par(fig = c(0.7,1,0,1), mar=c(0,0,0,0), new = FALSE)
+    legend("left", level.labels, fill=col.vec, bty="n", xpd=TRUE,
+          title="Legend")
+  
+    if(!is.na(outfile)){
+    # # paste windows device to jpeg device
+      dev.copy(jpeg, file = paste(plotdir, '/',outfile,'.jpg', sep = ""), width = 11.75,
+        height = 8.3, units = "in", pointsize = 12, quality = 75, bg = "white",
+        res = 150, restoreConsole = TRUE)
+      graphics.off()
+    }
+  }
+  
 #+end_src
 *** man-plotMap
 #+name:plotMap
 #+begin_src R :session *R* :tangle man/plotMap.Rd :exports none :eval no
-\name{plotMap}
-\alias{plotMap}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-Plot a Choropleth Map
-}
-\description{
-Plot a Choropleth Map
-}
-\usage{
-plotMap(stat = NA, plotdir = getwd(), probs = seq(0, 1, 0.2), outfile = NA, maptitle = "map", cellsmap = NA, region.map = NA)
-}
-%- maybe also 'usage' for other objects documented here.
-\arguments{
-  \item{stat}{
-the column with the statistic to be plotted
-}
-  \item{plotdir}{
-write out a graph
-}
-  \item{probs}{
-quantiles at which to break, default is quintiles, limit is 9
-}
-  \item{outfile}{
-output map file
-}
-  \item{maptitle}{
-
-}
-  \item{cellsmap}{
-if using a raster, can be same as region.map
-}
-  \item{region.map}{
-if using a polygon
-}
-}
-\value{
-a map
-}
-\references{
-http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
-
-Eduardo Leoni
-http://stackoverflow.com/a/1261288
-}
-\author{
-ivanhanigan
-}
-
-
+  \name{plotMap}
+  \alias{plotMap}
+  %- Also NEED an '\alias' for EACH other topic documented here.
+  \title{
+  Plot a Choropleth Map
+  }
+  \description{
+  Plot a Choropleth Map
+  }
+  \usage{
+  plotMap(stat = NA, plotdir = getwd(), probs = seq(0, 1, 0.2), outfile = NA, maptitle = "map", cellsmap = NA, region.map = NA)
+  }
+  %- maybe also 'usage' for other objects documented here.
+  \arguments{
+    \item{maptitle}{
+  
+  }
+    \item{stat}{
+  the column with the statistic to be plotted
+  }
+    \item{region.map}{
+  if using a polygon
+  }
+   \item{brew.pal}{
+  defaults to RdYlBu.  use display.brewer.all() to see options
+  }
+   \item{invert.brew.pal}{
+   inverted colour ramp
+  }
+    \item{cellsmap}{
+  if using a raster etc can be used to show pattern inside polygons, defaults to region.map and therefore overlays.
+  }
+    \item{plotdir}{
+  write out a graph
+  }
+    \item{probs}{
+  quantiles at which to break, default is quintiles, limit is 9
+  }
+    \item{outfile}{
+  output map file
+  }
+  
+  
+  
+  }
+  \value{
+  a map
+  }
+  \references{
+  http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
+  
+  Eduardo Leoni
+  http://stackoverflow.com/a/1261288
+  }
+  \author{
+  ivanhanigan
+  }
+  \examples{
+  Sr1 = Polygon(cbind(c(2,4,4,1,2),c(2,3,5,4,2)))
+  Sr2 = Polygon(cbind(c(5,4,2,5),c(2,3,2,2)))
+  Sr3 = Polygon(cbind(c(4,4,5,10,4),c(5,3,2,5,5)))
+  Sr4 = Polygon(cbind(c(5,6,6,5,5),c(4,4,3,3,4)), hole = TRUE)
+  Srs1 = Polygons(list(Sr1), "s1")
+  Srs2 = Polygons(list(Sr2), "s2")
+  Srs3 = Polygons(list(Sr3, Sr4), "s3/4")
+  SpP = SpatialPolygons(list(Srs1,Srs2,Srs3), 1:3)
+  plot(SpP, col = 1:3, pbg="white")
+  attr = data.frame(a=1:3, b=3:1, row.names=c("s3/4", "s2", "s1"))
+  SrDf = SpatialPolygonsDataFrame(SpP, attr)
+  plot(SrDf)
+  plotMap("title", stat = "b",region.map= SrDf)
+  }
+  
 #+end_src
 ** postgis_concordance
 *** COMMENT test-postgis_concordance
