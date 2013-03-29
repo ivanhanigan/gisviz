@@ -1,15 +1,16 @@
 
 ################################################################
 # name:plotMap
-################################################################################
+################################################################
 # A general mapping function, form of which was taken from here:
 # http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
-################################################################################
+################################################################
 
 plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
                     brew.pal = "RdYlBu",
                     invert.brew.pal = TRUE,
-                    cellsmap=region.map,
+                    cellsmap=region.map, scalebar = TRUE,
+                    xl = NA, yl = NA,
                     plotdir = getwd(),
                     probs=seq(0,1,.2),
                     outfile = NA)
@@ -33,13 +34,30 @@ plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
   # plot the map object with no border around the rectangels, and with colors
   # dictated by new variable we created, which holds the colours as its levels
   # paramater.
-  plot(cells.map,
-    border = FALSE,
-    axes = FALSE,
-    las = 1,
-    col = as.character(cells.map@data$bins))
-  axis(2)
-  axis(1)
+  if(!is.na(xl) & !is.na(yl))
+    {
+      plot(cells.map,
+           border = FALSE,
+           axes = FALSE,
+           las = 1,
+           col = as.character(cells.map@data$bins),
+           xlim = xl, ylim = yl
+           )
+    } else {
+      plot(cells.map,
+           border = FALSE,
+           axes = FALSE,
+           las = 1,
+           col = as.character(cells.map@data$bins)
+           )
+    }
+  if(scalebar == FALSE)
+    {
+      axis(1);axis(2)
+    } else {
+      map.scale(ratio=F)
+    }
+
   box()
   plot(region.map, add=TRUE, lwd=1)
   mtext(maptitle, side = 3, cex = 2, line = 0)

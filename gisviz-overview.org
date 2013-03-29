@@ -17,7 +17,7 @@ Version: 1.0
 Date: 2012-12-18
 Author: ivanhanigan
 Maintainer: <ivan.hanigan@gmail.com>
-Depends: RCurl, XML, ggmap, maps, maptools, RColorBrewer
+Depends: RCurl, XML, ggmap, maps, maptools, RColorBrewer, spdep, rgdal
 Description:  Functions I modified or created for visualising GIS data in population health and environmental science projects.
 License: GPL (>= 2)
 #+end_src
@@ -251,9 +251,9 @@ return(level.labels)
 *** test-plotMyMap
 #+name:plotMyMap
 #+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:plotMyMap
-plotMyMap('canberra', googlemaps = T)
+  ################################################################
+  # name:plotMyMap
+  plotMyMap('canberra', googlemaps = T)
 #+end_src
 *** R-plotMyMap
 #+name:plotMyMap
@@ -261,9 +261,6 @@ plotMyMap('canberra', googlemaps = T)
 ################################################################
 # name:plotMyMap
 plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
-  if (!require(maps)) install.packages('maps'); require(maps)
-  if (!require(ggmap)) install.packages('ggmap'); require(ggmap)
-  if (!require(maptools)) install.packages('maptools'); require(maptools)
   map('world', xlim = xl, ylim = yl)
   box()
   if(diff(xl) > 300) {
@@ -292,26 +289,43 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
 ** plotMap
 *** test-plotMap
 #+name:plotMap
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:plotMap
-
+#+begin_src R :session *R* :tangle no :exports none :eval yes
+  ################################################################
+  # name:plotMap
+  require(gisviz)
+  require(devtools)
+  load_all()
+  fn <- system.file("etc/shapes/eire.shp", package="spdep")[1]
+  prj <- CRS("+proj=utm +zone=30 +units=km")
+  eire <- readShapeSpatial(fn, ID="names", proj4string=prj)
+  class(eire)
+  eire@data
+  
+  plot(eire)
+  
+  eire2 <- spTransform(eire, CRS("+proj=longlat +datum=WGS84"))
+  plotMap(stat="INCOME", region.map=eire2, scalebar = F, xl = c(-8,-6), yl = c(52,53))
+  
 #+end_src
+
+#+RESULTS: plotMap
+
 *** R-plotMap
 #+name:plotMap
 #+begin_src R :session *R* :tangle R/plotMap.r :exports none :eval no
   
   ################################################################
   # name:plotMap
-  ################################################################################
+  ################################################################
   # A general mapping function, form of which was taken from here:
   # http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
-  ################################################################################
+  ################################################################
   
   plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
                       brew.pal = "RdYlBu",
                       invert.brew.pal = TRUE,
-                      cellsmap=region.map,
+                      cellsmap=region.map, scalebar = TRUE,
+                      xl = NA, yl = NA,
                       plotdir = getwd(),
                       probs=seq(0,1,.2),
                       outfile = NA)
@@ -335,13 +349,30 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     # plot the map object with no border around the rectangels, and with colors
     # dictated by new variable we created, which holds the colours as its levels
     # paramater.
-    plot(cells.map,
-      border = FALSE,
-      axes = FALSE,
-      las = 1,
-      col = as.character(cells.map@data$bins))
-    axis(2)
-    axis(1)
+    if(!is.na(xl) & !is.na(yl))
+      {
+        plot(cells.map,
+             border = FALSE,
+             axes = FALSE,
+             las = 1,
+             col = as.character(cells.map@data$bins),
+             xlim = xl, ylim = yl
+             )
+      } else {
+        plot(cells.map,
+             border = FALSE,
+             axes = FALSE,
+             las = 1,
+             col = as.character(cells.map@data$bins)
+             )
+      }
+    if(scalebar == FALSE)
+      {
+        axis(1);axis(2)
+      } else {
+        map.scale(ratio=F)
+      }
+  
     box()
     plot(region.map, add=TRUE, lwd=1)
     mtext(maptitle, side = 3, cex = 2, line = 0)
@@ -568,3 +599,4 @@ adjacency_df <- function(NB, shp, zone_id)
 # name:adjacency_df
 
 #+end_src
+    
