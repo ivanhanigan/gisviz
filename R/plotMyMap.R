@@ -1,3 +1,6 @@
+
+################################################################
+# name:plotMyMap
 plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
   if (!require(maps)) install.packages('maps'); require(maps)
   if (!require(ggmap)) install.packages('ggmap'); require(ggmap)
@@ -16,4 +19,3 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   }
   
 }
-#makeMyMap('canberra', googlemaps = T)

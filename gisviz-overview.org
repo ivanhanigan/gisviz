@@ -7,7 +7,7 @@
 -----
 
 * Introduction
-*** COMMENT DESCRIPTION-code
+** DESCRIPTION-code
 #+name:DESCRIPTION
 #+begin_src R :session *R* :tangle DESCRIPTION :exports none :eval no :padline no
 Package: gisviz
@@ -70,6 +70,19 @@ Maintainer: Who to complain to <ivan.hanigan@gmail.com>
 }
 
 #+end_src
+
+**  loadall-code
+#+name:loadall
+#+begin_src R :session *R* :tangle no :exports none :eval yes
+  ################################################################
+  # name:loadall
+  #dir("R")
+  require(devtools)
+  load_all()
+  
+#+end_src
+
+#+RESULTS: loadall
 
 * functions
 ** gGeoCode2
@@ -231,6 +244,48 @@ return(level.labels)
 #+begin_src R :session *R* :tangle no :exports none :eval no
 ################################################################
 # name:get.levels
+
+#+end_src
+
+** plotMyMap
+*** test-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:plotMyMap
+plotMyMap('canberra', googlemaps = T)
+#+end_src
+*** R-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle R/plotMyMap.R :exports none :eval no
+################################################################
+# name:plotMyMap
+plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
+  if (!require(maps)) install.packages('maps'); require(maps)
+  if (!require(ggmap)) install.packages('ggmap'); require(ggmap)
+  if (!require(maptools)) install.packages('maptools'); require(maptools)
+  map('world', xlim = xl, ylim = yl)
+  box()
+  if(diff(xl) > 300) {
+    axis(1);axis(2)
+  } else {
+    map.scale(ratio=F)
+  }
+  if(googlemaps == T){
+    points(geocode(location), pch =16, col = 'red')
+  } else {
+    points(location[1,], pch =16, col = 'red')
+  }
+  
+}
+
+
+#+end_src
+*** man-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:plotMyMap
 
 #+end_src
 
@@ -466,7 +521,6 @@ return(level.labels)
 #+end_src
 
 #+RESULTS: postgis_concordance
-
 
 ** adjacency_df
 *** test-adjacency_df
