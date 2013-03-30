@@ -1,19 +1,18 @@
 
 ################################################################
-# name:plotMap
+# name:choropleth
 ################################################################
 # A general mapping function, form of which was taken from here:
 # http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
 ################################################################
 
-plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
+choropleth <- function(maptitle = 'map', stat=NA, region.map=NA,
                     brew.pal = "RdYlBu",
                     invert.brew.pal = TRUE,
                     cellsmap=region.map, scalebar = TRUE,
                     xl = NA, yl = NA,
-                    plotdir = getwd(),
-                    probs=seq(0,1,.2),
-                    outfile = NA)
+                    probs=seq(0,1,.2)
+                    )
 {
   level.labels <- get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
   # create a new variable in cells.map to bin the data into categories
@@ -34,7 +33,8 @@ plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
   # plot the map object with no border around the rectangels, and with colors
   # dictated by new variable we created, which holds the colours as its levels
   # paramater.
-  if(!is.na(xl) & !is.na(yl))
+
+  if(!is.na(xl)  & !is.na(yl))
     {
       plot(cells.map,
            border = FALSE,
@@ -65,11 +65,4 @@ plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
   legend("left", level.labels, fill=col.vec, bty="n", xpd=TRUE,
         title="Legend")
 
-  if(!is.na(outfile)){
-  # # paste windows device to jpeg device
-    dev.copy(jpeg, file = paste(plotdir, '/',outfile,'.jpg', sep = ""), width = 11.75,
-      height = 8.3, units = "in", pointsize = 12, quality = 75, bg = "white",
-      res = 150, restoreConsole = TRUE)
-    graphics.off()
-  }
 }

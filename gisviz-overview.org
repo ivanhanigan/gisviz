@@ -286,12 +286,12 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
 
 #+end_src
 
-** plotMap
-*** test-plotMap
-#+name:plotMap
+** choropleth
+*** test-choropleth
+#+name:choropleth
 #+begin_src R :session *R* :tangle no :exports none :eval yes
   ################################################################
-  # name:plotMap
+  # name:choropleth
   require(gisviz)
   require(devtools)
   load_all()
@@ -304,31 +304,33 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   plot(eire)
   
   eire2 <- spTransform(eire, CRS("+proj=longlat +datum=WGS84"))
-  plotMap(stat="INCOME", region.map=eire2, scalebar = F, xl = c(-8,-6), yl = c(52,53))
+  ?choropleth
+  png("test.png")
+  choropleth(stat="INCOME", region.map=eire2, scalebar = T, xl = c(-8,-6), yl = c(52,53))
+  dev.off()
   
 #+end_src
 
-#+RESULTS: plotMap
+#+RESULTS: choropleth
 
-*** R-plotMap
-#+name:plotMap
-#+begin_src R :session *R* :tangle R/plotMap.r :exports none :eval no
+*** R-choropleth
+#+name:choropleth
+#+begin_src R :session *R* :tangle R/choropleth.r :exports none :eval no
   
   ################################################################
-  # name:plotMap
+  # name:choropleth
   ################################################################
   # A general mapping function, form of which was taken from here:
   # http://stackoverflow.com/questions/1260965/developing-geographic-thematic-maps-with-r
   ################################################################
   
-  plotMap <- function(maptitle = 'map', stat=NA, region.map=NA,
+  choropleth <- function(maptitle = 'map', stat=NA, region.map=NA,
                       brew.pal = "RdYlBu",
                       invert.brew.pal = TRUE,
                       cellsmap=region.map, scalebar = TRUE,
                       xl = NA, yl = NA,
-                      plotdir = getwd(),
-                      probs=seq(0,1,.2),
-                      outfile = NA)
+                      probs=seq(0,1,.2)
+                      )
   {
     level.labels <- get.levels(cellsmap=cellsmap,stat=stat,probs=probs)
     # create a new variable in cells.map to bin the data into categories
@@ -349,7 +351,8 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     # plot the map object with no border around the rectangels, and with colors
     # dictated by new variable we created, which holds the colours as its levels
     # paramater.
-    if(!is.na(xl) & !is.na(yl))
+  
+    if(!is.na(xl)  & !is.na(yl))
       {
         plot(cells.map,
              border = FALSE,
@@ -380,21 +383,14 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     legend("left", level.labels, fill=col.vec, bty="n", xpd=TRUE,
           title="Legend")
   
-    if(!is.na(outfile)){
-    # # paste windows device to jpeg device
-      dev.copy(jpeg, file = paste(plotdir, '/',outfile,'.jpg', sep = ""), width = 11.75,
-        height = 8.3, units = "in", pointsize = 12, quality = 75, bg = "white",
-        res = 150, restoreConsole = TRUE)
-      graphics.off()
-    }
   }
   
 #+end_src
-*** man-plotMap
-#+name:plotMap
-#+begin_src R :session *R* :tangle man/plotMap.Rd :exports none :eval no
-  \name{plotMap}
-  \alias{plotMap}
+*** man-choropleth
+#+name:choropleth
+#+begin_src R :session *R* :tangle man/choropleth.Rd :exports none :eval no
+  \name{choropleth}
+  \alias{choropleth}
   %- Also NEED an '\alias' for EACH other topic documented here.
   \title{
   Plot a Choropleth Map
@@ -403,7 +399,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   Plot a Choropleth Map
   }
   \usage{
-  plotMap(stat = NA, plotdir = getwd(), probs = seq(0, 1, 0.2), outfile = NA, maptitle = "map", cellsmap = NA, region.map = NA)
+  choropleth(stat = NA, plotdir = getwd(), probs = seq(0, 1, 0.2), outfile = NA, maptitle = "map", cellsmap = NA, region.map = NA)
   }
   %- maybe also 'usage' for other objects documented here.
   \arguments{
@@ -425,14 +421,17 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     \item{cellsmap}{
   if using a raster etc can be used to show pattern inside polygons, defaults to region.map and therefore overlays.
   }
-    \item{plotdir}{
-  write out a graph
+    \item{scalebar}{
+  if set to false then the axes are ploted
   }
+  \item{xl}{
+  xlim values
+}
+\item{yl}{
+ylim values
+}
     \item{probs}{
   quantiles at which to break, default is quintiles, limit is 9
-  }
-    \item{outfile}{
-  output map file
   }
   
   
@@ -451,6 +450,15 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   ivanhanigan
   }
   \examples{
+  require(gisviz)
+  fn <- system.file("etc/shapes/eire.shp", package="spdep")[1]
+  prj <- CRS("+proj=utm +zone=30 +units=km")
+  eire <- readShapeSpatial(fn, ID="names", proj4string=prj)
+  eire2 <- spTransform(eire, CRS("+proj=longlat +datum=WGS84"))
+  png("test.png")
+  choropleth(stat="INCOME", region.map=eire2, scalebar = T, xl = c(-8,-6), yl = c(52,53))
+  dev.off()
+
   Sr1 = Polygon(cbind(c(2,4,4,1,2),c(2,3,5,4,2)))
   Sr2 = Polygon(cbind(c(5,4,2,5),c(2,3,2,2)))
   Sr3 = Polygon(cbind(c(4,4,5,10,4),c(5,3,2,5,5)))
@@ -463,7 +471,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   attr = data.frame(a=1:3, b=3:1, row.names=c("s3/4", "s2", "s1"))
   SrDf = SpatialPolygonsDataFrame(SpP, attr)
   plot(SrDf)
-  plotMap("title", stat = "b",region.map= SrDf)
+  choropleth("title", stat = "b",region.map= SrDf)
   }
   
 #+end_src
