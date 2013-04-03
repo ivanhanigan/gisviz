@@ -604,6 +604,7 @@ colCoder <- function(poly, var, colPal){
 #+begin_src R :session *R* :tangle tests/test-postgis_concordance.r :exports none :eval yes
   require(swishdbtools)
   ch <- connect2postgres2("django")
+  pwd <- getPassword()
   sql <- postgis_concordance(conn = ch, source_table = "abs_sla.nswsla01",
                              target_table = "abs_sla.nswsla98",
                              into = "public.test",
@@ -612,7 +613,7 @@ colCoder <- function(poly, var, colPal){
                              eval = T
                              )
   #cat(sql)
-  shp <- readOGR2(hostip="localhost", user="ivan_hanigan", db="django", layer="test", p="kazoowazoo")
+  shp <- readOGR2(hostip="localhost", user="ivan_hanigan", db="django", layer="test", p = pwd)
   head(shp@data)
   choropleth(region.map=shp, stat="prop_olap_src_of_tgt")
 #+end_src
