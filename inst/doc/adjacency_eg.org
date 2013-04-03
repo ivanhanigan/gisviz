@@ -22,11 +22,14 @@ For a set of regions need to find the list of each region's neighbours.
   head(eire@data)
   nb <- poly2nb(eire)
   eire[['names']][1]
-  # so the neighbours of area 1 "Carlow" are
+  # > [1] Carlow so the neighbours of area 1 "Carlow" are in a list
+  # where every element is the neighbours of a single area
   eire[['names']][nb[[1]]]
+  # > [1] Kildare  Kilkenny Laoghis  Wexford  Wicklow
   
 #+end_src
 
+#+RESULTS: spdep
 | Kildare  |
 | Kilkenny |
 | Laoghis  |
