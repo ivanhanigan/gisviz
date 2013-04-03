@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="adjacency example "/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2013-04-03 15:43:15 EST"/>
+<meta name="generated" content="2013-04-04 10:30:09 EST"/>
 <meta name="author" content="Ivan Hanigan"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -137,24 +137,12 @@ eire <span style="color: #268bd2; font-weight: bold;">&lt;-</span> spTransform(e
 head(eire@data)
 nb <span style="color: #268bd2; font-weight: bold;">&lt;-</span> poly2nb(eire)
 eire[[<span style="color: #2aa198;">'names'</span>]][1]
-<span style="color: #586e75;"># </span><span style="color: #586e75;">so the neighbours of area 1 "Carlow" are</span>
+<span style="color: #586e75;"># </span><span style="color: #586e75;">&gt; [1] Carlow so the neighbours of area 1 "Carlow" are in a list</span>
+<span style="color: #586e75;"># </span><span style="color: #586e75;">where every element is the neighbours of a single area</span>
 eire[[<span style="color: #2aa198;">'names'</span>]][nb[[1]]]
+<span style="color: #586e75;"># </span><span style="color: #586e75;">&gt; [1] Kildare  Kilkenny Laoghis  Wexford  Wicklow</span>
 
 </pre>
-
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-<caption></caption>
-<colgroup><col class="left" />
-</colgroup>
-<tbody>
-<tr><td class="left">Kildare</td></tr>
-<tr><td class="left">Kilkenny</td></tr>
-<tr><td class="left">Laoghis</td></tr>
-<tr><td class="left">Wexford</td></tr>
-<tr><td class="left">Wicklow</td></tr>
-</tbody>
-</table>
 
 
 </div>
