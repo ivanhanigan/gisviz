@@ -85,207 +85,55 @@ Maintainer: Who to complain to <ivan.hanigan@gmail.com>
 #+RESULTS: loadall
 
 * functions
-** gGeoCode2
-*** test-gGeoCode2
-#+name:gGeoCode2
-#+begin_src R :session *R* :tangle tests/test-gGeoCode2.r :exports none :eval no
-  ################################################################
-  # name:gGeoCode2
-  source("../R/gGeoCode2.r")
-  address <- "1 Lineaus way acton canberra"
-  test_that("address is returned",
+** adjacency_df
+*** R-adjacency_df
+#+name:adjacency_df
+#+begin_src R :session *R* :tangle R/adjacency_df.r :exports none :eval no
+################################################################
+# name:adjacency_df
+adjacency_df <- function(NB, shp, zone_id)
   {
-    expect_that(nrow(gGeoCode2(address)) == 1, is_true())
+    adjacencydf <- as.data.frame(matrix(NA, nrow = 0, ncol = 2))
+    for(i in 1:length(NB))
+    {
+      if(length(shp[[zone_id]][NB[[i]]]) == 0) next
+      adjacencydf <- rbind(adjacencydf, cbind(as.character(shp[[zone_id]][i]),as.character(shp[[zone_id]][NB[[i]]])))
+    }
+    return(adjacencydf)
   }
-  )
 #+end_src
-*** R-gGeoCode2
-#+name:gGeoCode2
-#+begin_src R :session *R* :tangle R/gGeoCode2.r :exports none :eval no
-################################################################
-# name:gGeoCode2
-
-
-gGeoCode2 <- function(str, first=T){
-  if(!require(XML)) install.packages('XML'); require(XML)
-  if(!require(RCurl)) install.packages('RCurl'); require(RCurl)
-  getDocNodeVal=function(doc, path){
-    sapply(getNodeSet(doc, path), function(el) xmlValue(el))
-  }
-  
-  
-  str=gsub(' ','%20',str)
-  u=sprintf('https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=%s',str)
-  xml.response <- getURL(u, ssl.verifypeer=FALSE)
-  
-  doc = xmlTreeParse(xml.response, useInternal=TRUE, asText=TRUE)
-  
-  
-  
-  lat=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat')
-  lng=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng')
-  if(length(lng) == 1 & first == F){
-    
-    out<-c(str, lat, lng)
-  } else if(length(lng) >= 1 & first == T) {
-    out<-c(str, lat[1], lng[1])
-  } else {
-    out<-c(str, NA, NA)
-  }
-  out<-as.data.frame(t(out))
-  names(out) <- c('address','lat','long')
-  return(out)
-  
-}
-
-#+end_src
-*** man-gGeoCode2
-#+name:gGeoCode2
-#+begin_src R :session *R* :tangle man/gGeoCode2.Rd :exports none :eval no
-\name{gGeoCode2}
-\alias{gGeoCode2}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{
-gGeoCode2
-}
-\description{
-This is an HTTPS security enhanced version of the gGeoCode function from Ezgraphs. GoogleGeocodeMap.R, 2010. https://github.com/ezgraphs/R-Programs/blob/master/GoogleGeocodeMap.R. 
-}
-\usage{
-gGeoCode2(str, first = T)
-}
-%- maybe also 'usage' for other objects documented here.
-\arguments{
-  \item{str}{
-address string
-}
-  \item{first}{
-google may return multiple hits.  just return the first.
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
-\examples{
-address <- "1 Lineaus way acton canberra"
-gGeoCode2(address)
-}
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ geocoding }
-\keyword{ address }% __ONLY ONE__ keyword per line
-
-#+end_src
-
-** get.levels
-*** test-get.levels
-#+name:get.levels
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:get.levels
-
-#+end_src
-*** R-get.levels
-#+name:get.levels
-#+begin_src R :session *R* :tangle R/get.levels.r :exports none :eval no
-################################################################
-# name:get.levels
-
-################################################################
-# name:cells
-
-################################################################################
-# Function to return bin sizes for the map key            
-################################################################################
-get.levels = function(stat,cellsmap, probs=seq(0,1,.2)){
-  cells.map=cellsmap
-  bins = quantile(cells.map@data[,stat], probs, na.rm=T)  
-  binlevels = cut(cells.map@data[,stat], bins, include.lowest=TRUE)
-  groups = strsplit(levels(binlevels), ",")
-# Get the beginning value for each group
-  begins = sapply(groups, '[[', 1)
-  begins = substr(begins, 2, nchar(begins))
-# Get the beginning value for each group
-  ends = sapply(groups, '[[', 2)
-  ends = substr(ends, 1, nchar(ends)-1)
-# Put begins and ends together into labels
-  level.labels = paste(begins, ends, sep = " - ")
-  qlevels = paste(as.character(probs[2:length(probs)]*100),"%:",sep="") 
-  level.labels = paste(qlevels, level.labels)  
-return(level.labels) 
-}  
-#get.levels(cellsmap=d,stat='DAILY_MAX_')
-
-#+end_src
-*** man-get.levels
-#+name:get.levels
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:get.levels
-
-#+end_src
-
-** plotMyMap
-*** test-plotMyMap
-#+name:plotMyMap
-#+begin_src R :session *R* :tangle no :exports none :eval no
+*** test-adjacency_df
+#+name:adjacency_df
+#+begin_src R :session *R* :tangle tests/test-adjacency_df.r :exports none :eval no
   ################################################################
-  # name:plotMyMap
-  plotMyMap('canberra', googlemaps = T)
-#+end_src
-*** R-plotMyMap
-#+name:plotMyMap
-#+begin_src R :session *R* :tangle R/plotMyMap.R :exports none :eval no
-################################################################
-# name:plotMyMap
-plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
-  map('world', xlim = xl, ylim = yl)
-  box()
-  if(diff(xl) > 300) {
-    axis(1);axis(2)
-  } else {
-    map.scale(ratio=F)
-  }
-  if(googlemaps == T){
-    points(geocode(location), pch =16, col = 'red')
-  } else {
-    points(location[1,], pch =16, col = 'red')
-  }
+  # name:adjacency_df
+  require(devtools)
+  load_all()
+  require(spdep)
+  fn <- system.file("etc/shapes/eire.shp", package="spdep")[1]
+  prj <- CRS("+proj=utm +zone=30 +units=km")
+  eire <- readShapeSpatial(fn, ID="names", proj4string=prj)
+  class(eire)
+  eire@data
   
-}
-
-
+  plot(eire)
+  nb <- poly2nb(eire)
+  head(nb)
+  eire[['names']][1]
+  eire[['names']][nb[[1]]]
+  plot(nb, coordinates(eire), add=TRUE, pch=".", lwd=2)
+  adj <- adjacency_df(NB = nb, shp = eire, zone_id = 'names')
+  adj
+  
+  
 #+end_src
-*** man-plotMyMap
-#+name:plotMyMap
+*** man-adjacency_df
+#+name:adjacency_df
 #+begin_src R :session *R* :tangle no :exports none :eval no
 ################################################################
-# name:plotMyMap
+# name:adjacency_df
 
 #+end_src
-
 ** choropleth
 *** test-choropleth
 #+name:choropleth
@@ -598,6 +446,207 @@ colCoder <- function(poly, var, colPal){
 
 #+end_src
 
+** get.levels
+*** test-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:get.levels
+
+#+end_src
+*** R-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle R/get.levels.r :exports none :eval no
+################################################################
+# name:get.levels
+
+################################################################
+# name:cells
+
+################################################################################
+# Function to return bin sizes for the map key            
+################################################################################
+get.levels = function(stat,cellsmap, probs=seq(0,1,.2)){
+  cells.map=cellsmap
+  bins = quantile(cells.map@data[,stat], probs, na.rm=T)  
+  binlevels = cut(cells.map@data[,stat], bins, include.lowest=TRUE)
+  groups = strsplit(levels(binlevels), ",")
+# Get the beginning value for each group
+  begins = sapply(groups, '[[', 1)
+  begins = substr(begins, 2, nchar(begins))
+# Get the beginning value for each group
+  ends = sapply(groups, '[[', 2)
+  ends = substr(ends, 1, nchar(ends)-1)
+# Put begins and ends together into labels
+  level.labels = paste(begins, ends, sep = " - ")
+  qlevels = paste(as.character(probs[2:length(probs)]*100),"%:",sep="") 
+  level.labels = paste(qlevels, level.labels)  
+return(level.labels) 
+}  
+#get.levels(cellsmap=d,stat='DAILY_MAX_')
+
+#+end_src
+*** man-get.levels
+#+name:get.levels
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:get.levels
+
+#+end_src
+
+** gGeoCode2
+*** test-gGeoCode2
+#+name:gGeoCode2
+#+begin_src R :session *R* :tangle tests/test-gGeoCode2.r :exports none :eval no
+  ################################################################
+  # name:gGeoCode2
+  source("../R/gGeoCode2.r")
+  address <- "1 Lineaus way acton canberra"
+  test_that("address is returned",
+  {
+    expect_that(nrow(gGeoCode2(address)) == 1, is_true())
+  }
+  )
+#+end_src
+*** R-gGeoCode2
+#+name:gGeoCode2
+#+begin_src R :session *R* :tangle R/gGeoCode2.r :exports none :eval no
+################################################################
+# name:gGeoCode2
+
+
+gGeoCode2 <- function(str, first=T){
+  if(!require(XML)) install.packages('XML'); require(XML)
+  if(!require(RCurl)) install.packages('RCurl'); require(RCurl)
+  getDocNodeVal=function(doc, path){
+    sapply(getNodeSet(doc, path), function(el) xmlValue(el))
+  }
+  
+  
+  str=gsub(' ','%20',str)
+  u=sprintf('https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=%s',str)
+  xml.response <- getURL(u, ssl.verifypeer=FALSE)
+  
+  doc = xmlTreeParse(xml.response, useInternal=TRUE, asText=TRUE)
+  
+  
+  
+  lat=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat')
+  lng=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng')
+  if(length(lng) == 1 & first == F){
+    
+    out<-c(str, lat, lng)
+  } else if(length(lng) >= 1 & first == T) {
+    out<-c(str, lat[1], lng[1])
+  } else {
+    out<-c(str, NA, NA)
+  }
+  out<-as.data.frame(t(out))
+  names(out) <- c('address','lat','long')
+  return(out)
+  
+}
+
+#+end_src
+*** man-gGeoCode2
+#+name:gGeoCode2
+#+begin_src R :session *R* :tangle man/gGeoCode2.Rd :exports none :eval no
+\name{gGeoCode2}
+\alias{gGeoCode2}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+gGeoCode2
+}
+\description{
+This is an HTTPS security enhanced version of the gGeoCode function from Ezgraphs. GoogleGeocodeMap.R, 2010. https://github.com/ezgraphs/R-Programs/blob/master/GoogleGeocodeMap.R. 
+}
+\usage{
+gGeoCode2(str, first = T)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{str}{
+address string
+}
+  \item{first}{
+google may return multiple hits.  just return the first.
+}
+}
+\details{
+%%  ~~ If necessary, more details than the description above ~~
+}
+\value{
+%%  ~Describe the value returned
+%%  If it is a LIST, use
+%%  \item{comp1 }{Description of 'comp1'}
+%%  \item{comp2 }{Description of 'comp2'}
+%% ...
+}
+\references{
+%% ~put references to the literature/web site here ~
+}
+\author{
+%%  ~~who you are~~
+}
+\note{
+%%  ~~further notes~~
+}
+
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+
+\seealso{
+%% ~~objects to See Also as \code{\link{help}}, ~~~
+}
+\examples{
+address <- "1 Lineaus way acton canberra"
+gGeoCode2(address)
+}
+% Add one or more standard keywords, see file 'KEYWORDS' in the
+% R documentation directory.
+\keyword{ geocoding }
+\keyword{ address }% __ONLY ONE__ keyword per line
+
+#+end_src
+
+** plotMyMap
+*** test-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle no :exports none :eval no
+  ################################################################
+  # name:plotMyMap
+  plotMyMap('canberra', googlemaps = T)
+#+end_src
+*** R-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle R/plotMyMap.R :exports none :eval no
+################################################################
+# name:plotMyMap
+plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
+  map('world', xlim = xl, ylim = yl)
+  box()
+  if(diff(xl) > 300) {
+    axis(1);axis(2)
+  } else {
+    map.scale(ratio=F)
+  }
+  if(googlemaps == T){
+    points(geocode(location), pch =16, col = 'red')
+  } else {
+    points(location[1,], pch =16, col = 'red')
+  }
+  
+}
+
+
+#+end_src
+*** man-plotMyMap
+#+name:plotMyMap
+#+begin_src R :session *R* :tangle no :exports none :eval no
+################################################################
+# name:plotMyMap
+
+#+end_src
+
 ** postgis_concordance
 *** COMMENT postgis_concordance-code
 #+name:postgis_concordance
@@ -765,53 +814,173 @@ colCoder <- function(poly, var, colPal){
 
 #+end_src
 
-** adjacency_df
-*** R-adjacency_df
-#+name:adjacency_df
-#+begin_src R :session *R* :tangle R/adjacency_df.r :exports none :eval no
-################################################################
-# name:adjacency_df
-adjacency_df <- function(NB, shp, zone_id)
-  {
-    adjacencydf <- as.data.frame(matrix(NA, nrow = 0, ncol = 2))
-    for(i in 1:length(NB))
-    {
-      if(length(shp[[zone_id]][NB[[i]]]) == 0) next
-      adjacencydf <- rbind(adjacencydf, cbind(as.character(shp[[zone_id]][i]),as.character(shp[[zone_id]][NB[[i]]])))
-    }
-    return(adjacencydf)
-  }
-#+end_src
-*** test-adjacency_df
-#+name:adjacency_df
-#+begin_src R :session *R* :tangle tests/test-adjacency_df.r :exports none :eval no
+    
+
+** postgis_concordance_multi
+*** COMMENT postgis_concordance_multi-code
+#+name:postgis_concordance_multi
+#+begin_src R :session *R* :tangle R/postgis_concordance_multi.r :exports none :eval yes
   ################################################################
-  # name:adjacency_df
-  require(devtools)
-  load_all()
-  require(spdep)
-  fn <- system.file("etc/shapes/eire.shp", package="spdep")[1]
-  prj <- CRS("+proj=utm +zone=30 +units=km")
-  eire <- readShapeSpatial(fn, ID="names", proj4string=prj)
-  class(eire)
-  eire@data
+  # name:postgis_concordance_multi
+  postgis_concordance_multi <- function(conn, source_table, source_zones_code,
+                                  target_table, target_zones_code,
+                                  into = paste(source_table, "_concordance_multi", sep = ""),
+                                  tolerance = 0.01,
+                                  subset_target_table = NA,
+                                  eval = F
+                                  )
+  {
+    
+  sql <- paste("
+  select source_zone_code, source_zones, target_zone_code, prop_olap_src_of_tgt,
+    prop_olap_src_segment_of_src_orig, geom
+  frominto
+  (
+  select    src.zone_code as source_zone_code,
+            tgt.zone_code as target_zone_code, source_zones,
+            st_intersection(src.geom, tgt.geom) as geom,
+            st_area(src.geom) as src_area,
+            st_area(tgt.geom) as tgt_area,
+            st_area(st_intersection(src.geom, tgt.geom )) as area_overlap,
+            st_area(st_intersection(src.geom, tgt.geom
+                                    ))/st_area(tgt.geom) as
+            prop_olap_src_of_tgt,
+            st_area(st_intersection(src.geom, tgt.geom
+                                    ))/st_area(src.geom) as
+            prop_olap_src_segment_of_src_orig
+  from
+  (
+  select ",source_zones_code," as zone_code, geom, cast('",source_table,"' as text) as source_zones
+  from ",source_table,"
+  ) src,
+  (
+  select ",target_zones_code," as zone_code, geom
+  from ",target_table,"
+  ) tgt
+  where st_intersects(src.geom, tgt.geom)
+  ) concorded
+  where prop_olap_src_of_tgt > ",tolerance,";
+  grant select on ",into," to public_group;
+  ", sep = "")
+    
+  # if table exists add inserts, else
+  if(length(grep("\\.",into)) == 0)
+  {
+    schema <- "public"
+    table <- into
+  } else {
+    schema <- strsplit(into, "\\.")[[1]][1]
+    table <- strsplit(into, "\\.")[[1]][2]
+  }
+    
+  tableExists <- pgListTables(conn, schema, table)
+    
+  if(nrow(tableExists) != 0)
+    {
+      stop("table exists")
+    } else {
+      sql <-  gsub("frominto", paste("into ", into, "\nfrom", sep = ""), sql)
+    }
+    sql <- c(sql,paste("\n
+      alter table ",into," add column gid serial primary key;
+      ALTER TABLE ",into," ALTER COLUMN geom SET NOT NULL;
+      CREATE INDEX ",strsplit(into, "\\.")[[1]][2],"_gist on ",into," using GIST(geom);
+      ALTER TABLE ",into," CLUSTER ON ",strsplit(into, "\\.")[[1]][2],"_gist;
+      ", sep = "")
+      )
+  if(!is.na(subset_target_table))
+    {
+      sql <- gsub(") tgt", paste("where ", subset_target_table, "\n) tgt", sep = ""), sql)
+    }
+  if(eval)
+    {
+      dbSendQuery(conn, sql)
+    } else {
+      return(sql)
+    }
+    
+  }
+    
+#+end_src
+
+#+RESULTS: postgis_concordance_multi
+
+*** COMMENT test-postgis_concordance_multi
+#+name:postgis_concordance_multi
+#+begin_src R :session *R* :tangle tests/test-postgis_concordance_multi.r :exports none :eval yes
+  require(swishdbtools)
+  ch <- connect2postgres2("django")
+  pwd <- getPassword()
   
-  plot(eire)
-  nb <- poly2nb(eire)
-  head(nb)
-  eire[['names']][1]
-  eire[['names']][nb[[1]]]
-  plot(nb, coordinates(eire), add=TRUE, pch=".", lwd=2)
-  adj <- adjacency_df(NB = nb, shp = eire, zone_id = 'names')
-  adj
+  dbSendQuery(ch, "drop table public.test")
+  yy <- "98"
+  sql <- postgis_concordance_multi(
+                                   conn = ch
+                                   ,
+                                   source_zone_layers <- c('99','00', '01', '02', '03', '04', '05', '06', '07')
+                                   ,
+                                   source_zones_code = "sla_code"
+                                   ,
+                                   target_table = "abs_sla.nswsla98"
+                                   ,
+                                   target_zones_code = "sla_code"
+                                   ,
+                                   into = "public.test98"
+                                   ,
+                                   tolerance = 0.01
+                                   ,
+                                   subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'"
+                                   ,
+                                   eval = T
+                                   )
+  #cat(sql)
+  sql_subset(ch , "public.test98", subset = "cast(target_zone_code as text) like '%0750'", eval = T)
   
+  
+  dbSendQuery(ch, "drop table public.test99")
+  for(yy in zone_layers[-c(1:4)])
+    {
+  #    yy <- "99"
+      sql <- postgis_concordance_multi(conn = ch, source_table = sprintf("abs_sla.nswsla%s", yy),  source_zones_code = "sla_code",  target_table = "abs_sla.nswsla98", target_zones_code = "sla_code", into = paste("public.test", yy, sep = ""), tolerance = 0.01, subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'", eval = T)
+      #cat(sql)
+    }
+  
+  sql_subset(ch , "public.test01", subset = "cast(target_zone_code as text) like '%0750'", eval = T)
+  rm(df)
+  for(yy in zone_layers[2:4])
+    {
+  #   yy <- zone_layers[4]
+      #cat(
+      df1 <- sql_join(ch, x = "test98", y = paste("test", yy, sep = ""),
+                     select.x = "target_zone_code",
+                     select.y = c("target_zone_code", "source_zone_code", "prop_olap_src_of_tgt"),
+                     by = "target_zone_code",
+                     eval = T
+                     )
+  #    )
+      names(df1) <- c("target_zone_code", paste("code_",yy,sep=""), paste("prop_olap_",yy,sep=""))
+      if(yy == zone_layers[2])
+        {
+          df <- df1
+        } else {
+          df <- merge(df, df1, by = "target_zone_code")
+        }
+    }
+  subset(df, code_01!= target_zone_code)
+  subset(df1, target_zone_code == 105500750)
+  # the problem is that the  matchs on target are repeated for multiple
+  # source segments.  suggest refining postgis intersection code to
+  # return multiple layers
+  nrow(df)
+  shp <- readOGR2(hostip="localhost", user="ivan_hanigan", db="django", layer="test", p = pwd)
+  head(shp@data)
+  choropleth(region.map=shp, stat="prop_olap_src_of_tgt")
   
 #+end_src
-*** man-adjacency_df
-#+name:adjacency_df
-#+begin_src R :session *R* :tangle no :exports none :eval no
-################################################################
-# name:adjacency_df
+*** COMMENT man/postgis_concordance_multi-code
+#+name:man/postgis_concordance_multi
+#+begin_src R :session *R* :tangle man/postgis_concordance_multi.r :exports none :eval no
 
 #+end_src
+
     
