@@ -19,8 +19,8 @@ gGeoCode2 <- function(str, first=T){
 
 
 
-  lat <- as.numeric(getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat'))
-  lng <- as.numeric(getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng'))
+  lat <- getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat')
+  lng <- getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng')
 
   if(length(lng) == 1 & first == F){
     out<-c(str, lat, lng)
@@ -31,6 +31,8 @@ gGeoCode2 <- function(str, first=T){
   }
   out<-as.data.frame(t(out))
   names(out) <- c('address','lat','long')
+  out$lat <- as.numeric(as.character(out$lat))
+  out$long <- as.numeric(as.character(out$long))
   return(out)
 
 }

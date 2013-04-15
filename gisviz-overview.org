@@ -495,23 +495,6 @@ return(level.labels)
 #+end_src
 
 ** gGeoCode2
-*** test-gGeoCode2
-#+name:gGeoCode2
-#+begin_src R :session *R* :tangle tests/test-gGeoCode2.r :exports none :eval no
-  ################################################################
-  # name:gGeoCode2
-  source("../R/gGeoCode2.r")
-  address <- "1 Lineaus way acton canberra"
-  locn <-   gGeoCode2(address)
-  str(locn)
-  test_that("address is returned",
-  {
-    expect_that(nrow(
-                     gGeoCode2(address)
-                     ) == 1, is_true())
-  }
-  )
-#+end_src
 *** R-gGeoCode2
 #+name:gGeoCode2
 #+begin_src R :session *R* :tangle R/gGeoCode2.r :exports none :eval yes
@@ -557,6 +540,25 @@ return(level.labels)
 
 #+RESULTS: gGeoCode2
 
+*** test-gGeoCode2
+#+name:gGeoCode2
+#+begin_src R :session *R* :tangle tests/test-gGeoCode2.r :exports none :eval no
+    ################################################################
+    # name:gGeoCode2
+  #  source("../R/gGeoCode2.r")
+    require(devtools)
+    load_all()
+    address <- "1 Lineaus way acton canberra"
+    locn <-   gGeoCode2(address)
+    str(locn)
+    test_that("address is returned",
+    {
+      expect_that(nrow(
+                       gGeoCode2(address)
+                       ) == 1, is_true())
+    }
+    )
+#+end_src
 *** man-gGeoCode2
 #+name:gGeoCode2
 #+begin_src R :session *R* :tangle man/gGeoCode2.Rd :exports none :eval no
