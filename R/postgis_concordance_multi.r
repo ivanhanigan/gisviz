@@ -1,15 +1,15 @@
 
 ################################################################
-# name:postgis_concordance
-postgis_concordance <- function(conn, source_table, source_zones_code,
+# name:postgis_concordance_multi
+postgis_concordance_multi <- function(conn, source_table, source_zones_code,
                                 target_table, target_zones_code,
-                                into = paste(source_table, "_concordance", sep = ""),
+                                into = paste(source_table, "_concordance_multi", sep = ""),
                                 tolerance = 0.01,
                                 subset_target_table = NA,
                                 eval = F
                                 )
 {
-  
+
 sql <- paste("
 select source_zone_code, source_zones, target_zone_code, prop_olap_src_of_tgt,
   prop_olap_src_segment_of_src_orig, geom
@@ -41,7 +41,7 @@ where st_intersects(src.geom, tgt.geom)
 where prop_olap_src_of_tgt > ",tolerance,";
 grant select on ",into," to public_group;
 ", sep = "")
-  
+
 # if table exists add inserts, else
 if(length(grep("\\.",into)) == 0)
 {
@@ -51,9 +51,9 @@ if(length(grep("\\.",into)) == 0)
   schema <- strsplit(into, "\\.")[[1]][1]
   table <- strsplit(into, "\\.")[[1]][2]
 }
-  
+
 tableExists <- pgListTables(conn, schema, table)
-  
+
 if(nrow(tableExists) != 0)
   {
     stop("table exists")
@@ -77,5 +77,5 @@ if(eval)
   } else {
     return(sql)
   }
-  
+
 }

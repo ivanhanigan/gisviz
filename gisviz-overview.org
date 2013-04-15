@@ -502,52 +502,61 @@ return(level.labels)
   # name:gGeoCode2
   source("../R/gGeoCode2.r")
   address <- "1 Lineaus way acton canberra"
+  locn <-   gGeoCode2(address)
+  str(locn)
   test_that("address is returned",
   {
-    expect_that(nrow(gGeoCode2(address)) == 1, is_true())
+    expect_that(nrow(
+                     gGeoCode2(address)
+                     ) == 1, is_true())
   }
   )
 #+end_src
 *** R-gGeoCode2
 #+name:gGeoCode2
-#+begin_src R :session *R* :tangle R/gGeoCode2.r :exports none :eval no
-################################################################
-# name:gGeoCode2
-
-
-gGeoCode2 <- function(str, first=T){
-  if(!require(XML)) install.packages('XML'); require(XML)
-  if(!require(RCurl)) install.packages('RCurl'); require(RCurl)
-  getDocNodeVal=function(doc, path){
-    sapply(getNodeSet(doc, path), function(el) xmlValue(el))
+#+begin_src R :session *R* :tangle R/gGeoCode2.r :exports none :eval yes
+  ################################################################
+  # name:gGeoCode2
+  
+  
+  gGeoCode2 <- function(str, first=T){
+    if(!require(XML)) install.packages('XML'); require(XML)
+    if(!require(RCurl)) install.packages('RCurl'); require(RCurl)
+    getDocNodeVal=function(doc, path){
+      sapply(getNodeSet(doc, path), function(el) xmlValue(el))
+    }
+  
+  
+    str=gsub(' ','%20',str)
+    u=sprintf('https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=%s',str)
+    xml.response <- getURL(u, ssl.verifypeer=FALSE)
+  
+    doc = xmlTreeParse(xml.response, useInternal=TRUE, asText=TRUE)
+  
+  
+  
+    lat <- getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat')
+    lng <- getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng')
+  
+    if(length(lng) == 1 & first == F){
+      out<-c(str, lat, lng)
+    } else if(length(lng) >= 1 & first == T) {
+      out<-c(str, lat[1], lng[1])
+    } else {
+      out<-c(str, NA, NA)
+    }
+    out<-as.data.frame(t(out))
+    names(out) <- c('address','lat','long')
+    out$lat <- as.numeric(as.character(out$lat))
+    out$long <- as.numeric(as.character(out$long))
+    return(out)
+  
   }
   
-  
-  str=gsub(' ','%20',str)
-  u=sprintf('https://maps.googleapis.com/maps/api/geocode/xml?sensor=false&address=%s',str)
-  xml.response <- getURL(u, ssl.verifypeer=FALSE)
-  
-  doc = xmlTreeParse(xml.response, useInternal=TRUE, asText=TRUE)
-  
-  
-  
-  lat=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lat')
-  lng=getDocNodeVal(doc, '/GeocodeResponse/result/geometry/location/lng')
-  if(length(lng) == 1 & first == F){
-    
-    out<-c(str, lat, lng)
-  } else if(length(lng) >= 1 & first == T) {
-    out<-c(str, lat[1], lng[1])
-  } else {
-    out<-c(str, NA, NA)
-  }
-  out<-as.data.frame(t(out))
-  names(out) <- c('address','lat','long')
-  return(out)
-  
-}
-
 #+end_src
+
+#+RESULTS: gGeoCode2
+
 *** man-gGeoCode2
 #+name:gGeoCode2
 #+begin_src R :session *R* :tangle man/gGeoCode2.Rd :exports none :eval no
@@ -830,7 +839,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
                                   eval = F
                                   )
   {
-    
+  
   sql <- paste("
   select source_zone_code, source_zones, target_zone_code, prop_olap_src_of_tgt,
     prop_olap_src_segment_of_src_orig, geom
@@ -862,7 +871,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   where prop_olap_src_of_tgt > ",tolerance,";
   grant select on ",into," to public_group;
   ", sep = "")
-    
+  
   # if table exists add inserts, else
   if(length(grep("\\.",into)) == 0)
   {
@@ -872,9 +881,9 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     schema <- strsplit(into, "\\.")[[1]][1]
     table <- strsplit(into, "\\.")[[1]][2]
   }
-    
+  
   tableExists <- pgListTables(conn, schema, table)
-    
+  
   if(nrow(tableExists) != 0)
     {
       stop("table exists")
@@ -898,9 +907,9 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
     } else {
       return(sql)
     }
-    
+  
   }
-    
+  
 #+end_src
 
 #+RESULTS: postgis_concordance_multi
@@ -933,7 +942,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
                                    ,
                                    eval = T
                                    )
-  #cat(sql)
+  cat(sql)
   sql_subset(ch , "public.test98", subset = "cast(target_zone_code as text) like '%0750'", eval = T)
   
   

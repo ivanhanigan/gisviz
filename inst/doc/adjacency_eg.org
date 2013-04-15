@@ -7,19 +7,38 @@
 -----
 * Introduction
 For a set of regions need to find the list of each region's neighbours.
-* spdep calculates neighbours
-#+name:spdep calculates neighbours
+* Load some test data
+#+name:load-test-data
 #+begin_src R :session *R* :tangle no :exports code :eval yes 
-  ################################################################
-  # name:spdep calculates neighbours
+  # we have access to a classic dataset for studying spatial dependence
+  # in the spdep package
   require(spdep)
   require(maptools)
   fn <- system.file("etc/shapes/eire.shp", package="spdep")[1]
   prj <- CRS("+proj=utm +zone=30 +units=km")
   eire <- readShapeSpatial(fn, ID="names", proj4string=prj)
-  class(eire)
+  str(eire)
+  # reproject into a better coordinate system
   eire <- spTransform(eire, CRS("+proj=longlat +datum=WGS84"))
+  # check out the attributes
   head(eire@data)
+  
+#+end_src
+
+ |     A | towns | pale |  size | ROADACC | OWNCONS | POPCHG | RETSALE | INCOME | names   |
+ |-------+-------+------+-------+---------+---------+--------+---------+--------+---------|
+ |  34.2 |  0.12 |    1 |  1087 |    3664 |     8.6 |     97 |    2962 |   7185 | Carlow  |
+ | 29.68 |  0.01 |    0 |  2133 |    5000 |      15 |     69 |    4452 |   9459 | Cavan   |
+ | 26.54 |  0.01 |    0 |   535 |    4321 |      19 |     78 |    3460 |  12435 | Clare   |
+ | 23.92 |  0.03 |    0 |  1476 |    4118 |       9 |     90 |   28402 |  65901 | Cork    |
+ | 27.91 |  0.03 |    0 |   989 |    7500 |      27 |     75 |    7478 |  17626 | Donegal |
+ | 32.79 |  0.61 |    1 | 18105 |    3078 |     9.4 |    142 |   89424 | 164631 | Dublin  |
+
+
+* spdep calculates neighbours
+#+name:spdep calculates neighbours
+#+begin_src R :session *R* :tangle no :exports code :eval yes 
+
   nb <- poly2nb(eire)
   eire[['names']][1]
   # > [1] Carlow so the neighbours of area 1 "Carlow" are in a list
@@ -29,19 +48,13 @@ For a set of regions need to find the list of each region's neighbours.
   
 #+end_src
 
-#+RESULTS: spdep
-| Kildare  |
-| Kilkenny |
-| Laoghis  |
-| Wexford  |
-| Wicklow  |
 
 * plot these
 #+name:plot these
 #+begin_src R :session *R* :tangle no :exports code :eval yes
   ################################################################
   # name:plot these
-  png("Fig1.png")
+  png("images/Fig1.png")
   plot(eire)
   plot(nb, coordinates(eire), add=TRUE, pch=".", lwd=2)
   map.scale(ratio = F)
@@ -53,7 +66,7 @@ For a set of regions need to find the list of each region's neighbours.
 #+RESULTS: plot
 : 2
 
-file:Fig1.png
+file:images/Fig1.png
 
 * function to return adjacency list as a dataframe
 But I actually want this as a dataframe

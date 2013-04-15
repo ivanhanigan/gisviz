@@ -2,29 +2,29 @@
 require(swishdbtools)
 ch <- connect2postgres2("django")
 pwd <- getPassword()
-zone_layers <- c('98','99','00', '01', '02', '03', '04', '05', '06', '07')
+
 dbSendQuery(ch, "drop table public.test")
 yy <- "98"
-sql <- postgis_concordance(
-                           conn = ch
-                           ,
-                           source_table = sprintf("abs_sla.nswsla%s", yy)
-                           ,
-                           source_zones_code = "sla_code"
-                           ,
-                           target_table = "abs_sla.nswsla98"
-                           ,
-                           target_zones_code = "sla_code"
-                           ,
-                           into = "public.test98"
-                           ,
-                           tolerance = 0.01
-                           ,
-                           subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'"
-                           ,
-                           eval = T
-                           )
-#cat(sql)
+sql <- postgis_concordance_multi(
+                                 conn = ch
+                                 ,
+                                 source_zone_layers <- c('99','00', '01', '02', '03', '04', '05', '06', '07')
+                                 ,
+                                 source_zones_code = "sla_code"
+                                 ,
+                                 target_table = "abs_sla.nswsla98"
+                                 ,
+                                 target_zones_code = "sla_code"
+                                 ,
+                                 into = "public.test98"
+                                 ,
+                                 tolerance = 0.01
+                                 ,
+                                 subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'"
+                                 ,
+                                 eval = T
+                                 )
+cat(sql)
 sql_subset(ch , "public.test98", subset = "cast(target_zone_code as text) like '%0750'", eval = T)
 
 
@@ -32,7 +32,7 @@ dbSendQuery(ch, "drop table public.test99")
 for(yy in zone_layers[-c(1:4)])
   {
 #    yy <- "99"
-    sql <- postgis_concordance(conn = ch, source_table = sprintf("abs_sla.nswsla%s", yy),  source_zones_code = "sla_code",  target_table = "abs_sla.nswsla98", target_zones_code = "sla_code", into = paste("public.test", yy, sep = ""), tolerance = 0.01, subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'", eval = T)
+    sql <- postgis_concordance_multi(conn = ch, source_table = sprintf("abs_sla.nswsla%s", yy),  source_zones_code = "sla_code",  target_table = "abs_sla.nswsla98", target_zones_code = "sla_code", into = paste("public.test", yy, sep = ""), tolerance = 0.01, subset_target_table = "substr(cast(sla_code as text), 1, 3) = '105'", eval = T)
     #cat(sql)
   }
 
