@@ -2,6 +2,7 @@
 ################################################################
   # name:gGeoCode2
 #  source("../R/gGeoCode2.r")
+  require(testthat)
   require(devtools)
   load_all()
   address <- "1 Lineaus way acton canberra"
