@@ -1185,11 +1185,14 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   ################################################################
   # name:test-pgis_conc
   source("R/postgis_concordance.r")
+  require(swishdbtools)
   ch <- connect2postgres2("django")
   
+  sequence_id  <- substr(1999:2007, 3,4)
+  sequence_id
   zone_layers  <- paste("test",
-                        substr(1999:2007, 3,4)
-                        ,sep = "")
+                        sequence_id,
+                        sep = "")
   zone_layers  
   
   sql  <- postgis_concordance(ch,
@@ -1201,6 +1204,63 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
                               eval = F
                               )
   cat(sql)
+  # dev code
+  
+  tgt <- "98"
+  for(seq_i  in 2:length(sequence_id))
+    {    
+      #seq_i  <- 3
+      z1  <- zone_layers[seq_i -1]
+      z1.1 <- sequence_id[seq_i - 1]
+      z2  <- zone_layers[seq_i]
+      z2.2 <- sequence_id[seq_i]
+  
+      if(seq_i == 2)
+        {
+      
+  sql  <- paste("
+  select tgt.target_zone_code as code_",tgt,",
+    tgt.source_zone_code as code_",z1.1,",
+    src.source_zone_code as code_",z2.2,",  
+    st_intersection(src.geom, tgt.geom) as geom
+  into concordance_multi
+  from
+  (
+  select *
+  from ",z1,"
+  ) tgt,
+  (
+  select *
+  from ",z2,"
+  ) src
+  where st_intersects(src.geom, tgt.geom)
+  ", sep = "")
+  # cat(sql)
+  dbSendQuery(ch, sql)
+  
+        } else {
+  
+  sql  <- paste("
+  select tgt.*,
+    src.source_zone_code as code_",z2.2,",  
+    st_intersection(src.geom, tgt.geom) as geom
+  into concordance_multi2
+  from
+  (
+  select *
+  from concordance_multi
+  ) tgt,
+  (
+  select *
+  from ",z2,"
+  ) src
+  where st_intersects(src.geom, tgt.geom)
+  ", sep = "")
+  cat(sql)
+  dbSendQuery(ch, sql)
+  
+        } 
+  }
 #+end_src
 
 *** COMMENT man/postgis_concordance_multi-code
