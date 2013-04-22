@@ -1,81 +1,109 @@
 
 ################################################################
 # name:postgis_concordance_multi
-postgis_concordance_multi <- function(conn, source_table, source_zones_code,
-                                target_table, target_zones_code,
-                                into = paste(source_table, "_concordance_multi", sep = ""),
-                                tolerance = 0.01,
-                                subset_target_table = NA,
-                                eval = F
-                                )
-{
+## postgis_concordance_multi <- function(conn, source_zone_layers, source_zones_code,
+##                                 target_table, target_zones_code,
+##                                 into = paste(source_table, "_concordance_multi", sep = ""),
+##                                 tolerance = 0.01,
+##                                 subset_target_table = NA,
+##                                 eval = F
+##                                 )
+## {
 
-sql <- paste("
-select source_zone_code, source_zones, target_zone_code, prop_olap_src_of_tgt,
-  prop_olap_src_segment_of_src_orig, geom
-frominto
-(
-select    src.zone_code as source_zone_code,
-          tgt.zone_code as target_zone_code, source_zones,
-          st_intersection(src.geom, tgt.geom) as geom,
-          st_area(src.geom) as src_area,
-          st_area(tgt.geom) as tgt_area,
-          st_area(st_intersection(src.geom, tgt.geom )) as area_overlap,
-          st_area(st_intersection(src.geom, tgt.geom
-                                  ))/st_area(tgt.geom) as
-          prop_olap_src_of_tgt,
-          st_area(st_intersection(src.geom, tgt.geom
-                                  ))/st_area(src.geom) as
-          prop_olap_src_segment_of_src_orig
-from
-(
-select ",source_zones_code," as zone_code, geom, cast('",source_table,"' as text) as source_zones
-from ",source_table,"
-) src,
-(
-select ",target_zones_code," as zone_code, geom
-from ",target_table,"
-) tgt
-where st_intersects(src.geom, tgt.geom)
-) concorded
-where prop_olap_src_of_tgt > ",tolerance,";
-grant select on ",into," to public_group;
-", sep = "")
 
-# if table exists add inserts, else
-if(length(grep("\\.",into)) == 0)
-{
-  schema <- "public"
-  table <- into
-} else {
-  schema <- strsplit(into, "\\.")[[1]][1]
-  table <- strsplit(into, "\\.")[[1]][2]
-}
+##   for(i in 1:length(source_zone_layers))
+##     {
+       i  <- 1
+      src_zone  <-  source_zone_layers[i]
+#       src_zone
 
-tableExists <- pgListTables(conn, schema, table)
-
-if(nrow(tableExists) != 0)
-  {
-    stop("table exists")
-  } else {
-    sql <-  gsub("frominto", paste("into ", into, "\nfrom", sep = ""), sql)
-  }
-  sql <- c(sql,paste("\n
-    alter table ",into," add column gid serial primary key;
-    ALTER TABLE ",into," ALTER COLUMN geom SET NOT NULL;
-    CREATE INDEX ",strsplit(into, "\\.")[[1]][2],"_gist on ",into," using GIST(geom);
-    ALTER TABLE ",into," CLUSTER ON ",strsplit(into, "\\.")[[1]][2],"_gist;
-    ", sep = "")
-    )
-if(!is.na(subset_target_table))
-  {
-    sql <- gsub(") tgt", paste("where ", subset_target_table, "\n) tgt", sep = ""), sql)
-  }
-if(eval)
-  {
-    dbSendQuery(conn, sql)
-  } else {
-    return(sql)
-  }
-
-}
+      #sql <-
+      postgis_concordance(
+                           conn = conn
+                           ,
+                           source_table = src_zone
+                           ,
+                           source_zones_code = source_zones_code
+                           ,
+                           source_attributes = NA
+                           ,
+                           target_table = target_table
+                           ,
+                           target_zones_code = target_zones_code
+                           ,
+                           into = paste(into, i, sep = "")
+                           ,
+                           tolerance = tolerance
+                           ,
+                           subset_target_table = subset_target_table
+                           ,
+                           eval = T
+                           )
+      #cat(sql)
+      #dbSendQuery(conn, sql)
+      ## src_zone_name  <- gsub("\\.", "_", src_zone)
+       
+      ## sql  <- paste("
+      ## select gid, target_fid, target_zone_code,
+      ##   source_zone_code as ",src_zone_name, ", geom
+      ## into ",paste(into,"_out", i, sep = ""), "
+      ## from ",into,"
+      ## ", sep = "")
+      ## cat(sql)                  
+      ## dbSendQuery(conn, sql)
+      ## dbSendQuery(conn, sprintf("drop table %s", into))
+       i  <- 2
+      src_zone  <-  source_zone_layers[i]
+      src_zone
+      #      sql <-
+      postgis_concordance(
+                           conn = conn
+                           ,
+                           source_table = src_zone
+                           ,
+                           source_zones_code = source_zones_code
+                           ,
+                           source_attributes = "source_zone_code as sla00"
+                           ,
+                           target_table = paste(into, i-1, sep = "")
+                           ,
+                           target_zones_code = "target_zone_code"
+                           ,
+                           into = paste(into, i, sep = "")
+                           ,
+                           tolerance = tolerance
+                           ,
+                           subset_target_table = NA
+                           ,
+                           eval = T
+                           )
+      #cat(sql)
+      i  <- 3
+      src_zone  <-  source_zone_layers[i]
+       src_zone
+            sql <-
+      postgis_concordance(
+                           conn = conn
+                           ,
+                           source_table = src_zone
+                           ,
+                           source_zones_code = source_zones_code
+                           ,
+                           source_attributes = "sla00, source_zone_code as sla01"
+                           ,
+                           target_table = paste(into, i-1, sep = "")
+                           ,
+                           target_zones_code = "target_zone_code"
+                           ,
+                           into = paste(into, i, sep = "")
+                           ,
+                           tolerance = tolerance
+                           ,
+                           subset_target_table = NA
+                           ,
+                           eval = F
+                           )
+      cat(sql)
+#
+#    }
+#}

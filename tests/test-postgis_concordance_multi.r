@@ -8,7 +8,7 @@ yy <- "98"
 sql <- postgis_concordance_multi(
                                  conn = ch
                                  ,
-                                 source_zone_layers <- c('99','00', '01', '02', '03', '04', '05', '06', '07')
+                                 source_zone_layers <- c('abs_sla.nswsla99','abs_sla.nswsla00', 'abs_sla.nswsla01', 'abs_sla.nswsla02', 'abs_sla.nswsla03', 'abs_sla.nswsla04', 'abs_sla.nswsla05', 'abs_sla.nswsla06', 'abs_sla.nswsla07')
                                  ,
                                  source_zones_code = "sla_code"
                                  ,
