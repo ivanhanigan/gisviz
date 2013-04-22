@@ -30,7 +30,7 @@ select    src.zone_code as source_zone_code,
           prop_olap_src_segment_of_src_orig
 from
 (
-select ",source_zones_code," as zone_code, cast('",source_table,"' as text) as source_zones, *
+select ",source_zones_code," as zone_code, cast('",source_table,"' as text) as source_zones, geom
 from ",source_table,"
 ) src,
 (
