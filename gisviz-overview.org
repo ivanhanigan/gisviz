@@ -993,7 +993,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
 ** postgis_concordance_multi
 *** COMMENT postgis_concordance_multi-code
 #+name:postgis_concordance_multi
-#+begin_src R :session *R* :tangle R/postgis_concordance_multi.r :exports none :eval yes
+#+begin_src R :session *R* :tangle no :exports none :eval yes
   ################################################################
   # name:postgis_concordance_multi
   ## postgis_concordance_multi <- function(conn, source_zone_layers, source_zones_code,
@@ -1109,7 +1109,7 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
 
 *** COMMENT test-postgis_concordance_multi
 #+name:postgis_concordance_multi
-#+begin_src R :session *R* :tangle tests/test-postgis_concordance_multi.r :exports none :eval yes
+#+begin_src R :session *R* :tangle no :exports none :eval yes
   require(swishdbtools)
   ch <- connect2postgres2("django")
   pwd <- getPassword()
