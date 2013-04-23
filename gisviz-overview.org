@@ -1263,6 +1263,114 @@ plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F
   }
 #+end_src
 
+*** COMMENT test-sql-code
+#+name:test-sql
+#+begin_src SQL :tangle no :exports none :eval no
+-- problems encountered when intersection the output of the st_intersections...
+-- might want to try exporting to shapefile then importing again to see if that fixes the geom?
+
+-- select insct1.sla98, sla99, sla00,   
+--   src.source_zone_code as code_01,
+--   st_intersection(src.geom, insct1.geom) as geom
+-- from  
+-- (
+-- 	select tgt.target_zone_code as sla98,
+-- 	  tgt.source_zone_code as sla99,
+-- 	  src.source_zone_code as sla00,  
+-- 	  (ST_dump(st_intersection(src.geom, tgt.geom))).geom as geom
+-- 	from
+-- 	(
+-- 	select *
+-- 	from test99
+-- 	) tgt,
+-- 	(
+-- 	select *
+-- 	from test00
+-- 	) src
+-- 	where st_intersects(src.geom, tgt.geom)
+-- ) insct1,
+-- (
+-- select *
+-- from test01
+-- ) src
+-- where st_intersects(src.geom, insct1.geom)
+-- 
+-- 
+-- 
+
+
+select tgt.code_98, code_99, code_00,
+  src.source_zone_code as code_01,  
+  st_intersection(src.geom, st_buffer(tgt.geom2, 0.0)) as geom
+into concordance_multi2
+from
+(
+select *, (st_dump(geom)).geom as geom2
+from concordance_multi
+) tgt,
+(
+select *
+from test02
+) src
+where st_intersects(src.geom, tgt.geom2);
+
+
+select tgt.code_98, code_99, code_00, code_01,
+  src.source_zone_code as code_03,  
+  st_intersection(src.geom, st_buffer(tgt.geom2, 0.0)) as geom
+into concordance_multi3
+from
+(
+select *, (st_dump(geom)).geom as geom2
+from concordance_multi2
+) tgt,
+(
+select *
+from test03
+) src
+where st_intersects(src.geom, tgt.geom2)
+
+
+
+
+
+
+
+drop table  concordance_multi4;
+select tgt.target_zone_code, 
+  tgt.source_zone_code as code_99, 
+  src.source_zone_code as code_00, 
+  st_intersection(src.geom, tgt.geom) as geom
+into concordance_multi4
+from
+(
+select *
+from test99
+) tgt,
+(
+select *
+from test00
+) src
+where st_intersects(src.geom, tgt.geom);
+select * from concordance_multi4;
+
+select tgt.target_zone_code, 
+  code_99, code_00,
+  src.sla_code as code_01, 
+  st_intersection(src.geom, (st_dump(tgt.geom)).geom) as geom
+into concordance_multi5
+from
+(
+select *
+from concordance_multi4
+) tgt,
+(
+select *
+from abs_sla.nswsla01
+) src
+where st_intersects(src.geom, (st_dump(tgt.geom)).geom);
+#+end_src
+
 *** COMMENT man/postgis_concordance_multi-code
 #+name:man/postgis_concordance_multi
 #+begin_src R :session *R* :tangle man/postgis_concordance_multi.r :exports none :eval no
