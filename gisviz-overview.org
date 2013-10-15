@@ -17,7 +17,7 @@ Version: 1.1
 Date: 2013-05-08
 Author: ivanhanigan
 Maintainer: <ivan.hanigan@gmail.com>
-Depends: R (>= 3.0), RCurl, XML, ggmap, maps, maptools, RColorBrewer, spdep, rgdal
+Depends: RCurl, XML, ggmap, maps, maptools, RColorBrewer, spdep, rgdal
 Description:  Functions I modified or created for visualising GIS data in population health and environmental science projects.
 License: GPL (>= 2)
 #+end_src
@@ -775,25 +775,25 @@ gGeoCode2(address)
 *** R-plotMyMap
 #+name:plotMyMap
 #+begin_src R :session *R* :tangle R/plotMyMap.R :exports none :eval no
-################################################################
-# name:plotMyMap
-plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
-  map('world', xlim = xl, ylim = yl)
-  box()
-  if(diff(xl) > 300) {
-    axis(1);axis(2)
-  } else {
-    map.scale(ratio=F)
-  }
-  if(googlemaps == T){
-    points(geocode(location), pch =16, col = 'red')
-  } else {
-    points(location[1,], pch =16, col = 'red')
+  ################################################################
+  # name:plotMyMap
+  plotMyMap <- function(location, xl = c(-180,180), yl = c(-50,50), googlemaps = F){
+    map('world', xlim = xl, ylim = yl)
+    box()
+    if(diff(xl) > 300) {
+      axis(1);axis(2)
+    } else {
+      map.scale(ratio=F)
+    }
+    if(googlemaps == T){
+      points(geocode(location), pch =16, col = 'red')
+    } else {
+      points(location, pch =16, col = 'red')
+    }
+    
   }
   
-}
-
-
+  
 #+end_src
 *** man-plotMyMap
 #+name:plotMyMap
